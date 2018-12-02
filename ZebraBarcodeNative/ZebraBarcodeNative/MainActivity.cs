@@ -22,26 +22,14 @@ namespace ZebraBarcodeNative
         private Scanner scanner = null;
 
         // Declare a flag for continuous scan mode
-        private bool isContinuousMode = false;
-
-        // Declare a flag to save the current state of continuous mode flag during OnPause() and Bluetooth scanner Disconnected event.
-        private bool isContinuousModeSaved = false;
-
-        private TextView textViewData = null;
-        private TextView textViewStatus = null;
-
-        private CheckBox checkBoxContinuous = null;
+        private bool isContinuousMode = true;
 
         private IList<ScannerInfo> scannerList = null;
 
-        private int scannerIndex = 0; // Keep the selected scanner
-        private int defaultIndex = 0; // Keep the default scanner 
-
+        private TextView textViewData = null;
+        private TextView textViewStatus = null;
         private int dataCount = 0;
-        //private int counter = 0;
-
         private string statusString = "";
-
         Button buttonStartScan;
         Button buttonStopScan;
 
@@ -58,10 +46,6 @@ namespace ZebraBarcodeNative
 
             buttonStopScan = FindViewById<Button>(Resource.Id.buttonStopScan);
             buttonStopScan.Click += buttonStopScan_Click;
-
-            // AddStartScanButtonListener();
-            AddSpinnerScannersListener();
-            AddCheckBoxContinuousListener();
 
             // The EMDKManager object will be created and returned in the callback
             EMDKResults results = EMDKManager.GetEMDKManager(Application.Context, this);
@@ -105,13 +89,6 @@ namespace ZebraBarcodeNative
         {
             base.OnPause();
             // The application is in background
-
-            // Save the current state of continuous mode flag
-            isContinuousModeSaved = isContinuousMode;
-
-            // Reset continuous flag 
-            isContinuousMode = false;
-
             // De-initialize scanner
             DeInitScanner();
 
@@ -136,10 +113,7 @@ namespace ZebraBarcodeNative
         {
             base.OnResume();
             // The application is in foreground 
-
-            // Restore continuous mode flag
-            isContinuousMode = isContinuousModeSaved;
-
+            
             // Acquire the barcode manager resources
             if (emdkManager != null)
             {
@@ -152,9 +126,6 @@ namespace ZebraBarcodeNative
                         // Add connection listener
                         barcodeManager.Connection += barcodeManager_Connection;
                     }
-
-                    // Enumerate scanners 
-                    EnumerateScanners();
                 }
                 catch (Exception e)
                 {
@@ -204,9 +175,6 @@ namespace ZebraBarcodeNative
                     // Add connection listener
                     barcodeManager.Connection += barcodeManager_Connection;
                 }
-
-                // Enumerate scanner devices
-                EnumerateScanners();
             }
             catch (Exception e)
             {
@@ -226,11 +194,9 @@ namespace ZebraBarcodeNative
             string statusBT = connectionState.ToString();
             string scannerNameBT = scannerInfo.FriendlyName;
 
-
-
             if (scannerList.Count != 0)
             {
-                scannerName = scannerList[scannerIndex].FriendlyName;
+                scannerName = scannerList[0].FriendlyName;
             }
 
             if (scannerName.ToLower().Equals(scannerNameBT.ToLower()))
@@ -241,9 +207,6 @@ namespace ZebraBarcodeNative
                 if (connectionState == BarcodeManager.ConnectionState.Connected)
                 {
                     // Bluetooth scanner connected
-
-                    // Restore continuous mode flag
-                    isContinuousMode = isContinuousModeSaved;
                     // De-initialize scanner
                     DeInitScanner();
                     // Initialize scanner
@@ -258,11 +221,6 @@ namespace ZebraBarcodeNative
 
                 if (connectionState == BarcodeManager.ConnectionState.Disconnected)
                 {
-                    // Bluetooth scanner disconnected
-
-                    // Save the current state of continuous mode flag
-                    isContinuousModeSaved = isContinuousMode;
-
                     // Reset continuous flag 
                     isContinuousMode = false;
 
@@ -295,7 +253,7 @@ namespace ZebraBarcodeNative
                     if (scanner.IsEnabled)
                     {
                         // Set continuous flag
-                        isContinuousMode = checkBoxContinuous.Checked;
+                        isContinuousMode = true;
 
                         // Submit a new read.
                         scanner.Read();
@@ -332,80 +290,12 @@ namespace ZebraBarcodeNative
                 }
             }
         }
-
-        private void AddSpinnerScannersListener()
-        {
-        }
-
-        void spinnerScanners_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            if ((scannerIndex != e.Position) || (scanner == null))
-            {
-                scannerIndex = e.Position;
-                DeInitScanner();
-                InitScanner();
-            }
-        }
-
-        private void AddCheckBoxContinuousListener()
-        {
-            checkBoxContinuous = FindViewById<CheckBox>(Resource.Id.checkBoxContinuous);
-            checkBoxContinuous.CheckedChange += checkBoxContinuous_CheckedChange;
-        }
-
-        void checkBoxContinuous_CheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
-        {
-            isContinuousMode = e.IsChecked;
-        }
-
-        private void EnumerateScanners()
-        {
-            if (barcodeManager != null)
-            {
-                int spinnerIndex = 0;
-                List<string> friendlyNameList = new List<string>();
-
-                // Query the supported scanners on the device
-                scannerList = barcodeManager.SupportedDevicesInfo;
-
-                if ((scannerList != null) && (scannerList.Count > 0))
-                {
-                    foreach (ScannerInfo scnInfo in scannerList)
-                    {
-                        friendlyNameList.Add(scnInfo.FriendlyName);
-
-                        // Save index of the default scanner (device specific one)
-                        if (scnInfo.IsDefaultScanner)
-                        {
-                            defaultIndex = spinnerIndex;
-                        }
-
-                        ++spinnerIndex;
-                    }
-                    textViewStatus.Text = "Status: " + "Scanner not there .";
-                }
-                else
-                {
-                    textViewStatus.Text = "Status: Failed to get the list of supported scanner devices! Please close and restart the application.";
-                }
-
-
-            }
-        }
-
+        
         private void InitScanner()
         {
             if (scanner == null)
             {
-                if ((scannerList != null) && (scannerList.Count > 0))
-                {
-                    scanner = barcodeManager.GetDevice(barcodeManager.SupportedDevicesInfo[0]);
-                }
-                else
-                {
-                    textViewStatus.Text = "Status: Failed to get the specified scanner device! Please close and restart the application.";
-                    return;
-                }
+                scanner = barcodeManager.GetDevice(barcodeManager.SupportedDevicesInfo[0]);
 
                 if (scanner != null)
                 {
@@ -443,7 +333,7 @@ namespace ZebraBarcodeNative
                 statusString = "Status: " + statusData.FriendlyName + " is enabled and idle...";
                 RunOnUiThread(() => textViewStatus.Text = statusString);
 
-                if (isContinuousMode)
+                if (isContinuousMode)//jezeli brakuje isContinuousMode to skanner działa zawsze
                 {
                     try
                     {
