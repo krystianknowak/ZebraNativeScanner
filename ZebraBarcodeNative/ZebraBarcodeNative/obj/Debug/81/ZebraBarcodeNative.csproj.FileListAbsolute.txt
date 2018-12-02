@@ -135,3 +135,4 @@ C:\Users\Krystian\source\repos\ZebraNativeScanner\ZebraBarcodeNative\ZebraBarcod
 C:\Users\Krystian\source\repos\ZebraNativeScanner\ZebraBarcodeNative\ZebraBarcodeNative\obj\Debug\81\android\assets\System.ServiceModel.Internals.pdb
 C:\Users\Krystian\source\repos\ZebraNativeScanner\ZebraBarcodeNative\ZebraBarcodeNative\obj\Debug\81\android\assets\System.Xml.pdb
 C:\Users\Krystian\source\repos\ZebraNativeScanner\ZebraBarcodeNative\ZebraBarcodeNative\obj\Debug\81\android\assets\ZebraBarcodeNative.pdb
+C:\Users\Krystian\source\repos\ZebraNativeScanner\ZebraBarcodeNative\ZebraBarcodeNative\obj\Debug\81\ZebraBarcodeNative.csprojAssemblyReference.cache

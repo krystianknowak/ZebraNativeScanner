@@ -17,13 +17,8 @@ namespace ZebraBarcodeNative
     [Activity(Label = "BarcodeSample1", MainLauncher = true, Icon = "@drawable/icon", ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait)]
     public class MainActivity : Activity, EMDKManager.IEMDKListener
     {
-        // Declare a variable to store EMDKManager object
         private EMDKManager emdkManager = null;
-
-        // Declare a variable to store BarcodeManager object
         private BarcodeManager barcodeManager = null;
-
-        // Declare a variable to store Scanner object
         private Scanner scanner = null;
 
         // Declare a flag for continuous scan mode
@@ -37,8 +32,6 @@ namespace ZebraBarcodeNative
 
         private CheckBox checkBoxContinuous = null;
 
-        private Spinner spinnerScanners = null;
-
         private IList<ScannerInfo> scannerList = null;
 
         private int scannerIndex = 0; // Keep the selected scanner
@@ -51,50 +44,11 @@ namespace ZebraBarcodeNative
 
         Button buttonStartScan;
         Button buttonStopScan;
-        bool horizontal = false;
+
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
-
-            // Disable auto rotation of the app.
-            RequestedOrientation = Android.Content.PM.ScreenOrientation.Nosensor;
-
-            // Get current rotation angle of the screen from its default/natural orientation.
-            var windowManager = (IWindowManager)ApplicationContext.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
-            var rotation = windowManager.DefaultDisplay.Rotation;
-
-            // Determine width/height in pixels based on the rotation angle.
-            DisplayMetrics dm = new DisplayMetrics();
-            WindowManager.DefaultDisplay.GetMetrics(dm);
-
-            int width = 0;
-            int height = 0;
-
-            switch (rotation)
-            {
-                case SurfaceOrientation.Rotation0:
-                    width = dm.WidthPixels;
-                    height = dm.HeightPixels;
-                    break;
-                case SurfaceOrientation.Rotation90:
-                case SurfaceOrientation.Rotation270:
-                    width = dm.WidthPixels;
-                    height = dm.HeightPixels;
-                    break;
-                default:
-                    break;
-            }
-
-            // Set corresponding layout dynamically based on the default/natural orientation.
-            if (width > height)
-            {
-                SetContentView(Resource.Layout.activity_main);
-                horizontal = true;
-            }
-            else
-            {
-                SetContentView(Resource.Layout.activity_main);
-            }
+            SetContentView(Resource.Layout.activity_main);
 
             textViewData = FindViewById<TextView>(Resource.Id.textViewData) as TextView;
             textViewStatus = FindViewById<TextView>(Resource.Id.textViewStatus) as TextView;
@@ -102,18 +56,9 @@ namespace ZebraBarcodeNative
             buttonStartScan = FindViewById<Button>(Resource.Id.buttonStartScan);
             buttonStartScan.Click += buttonStartScan_Click;
 
-
             buttonStopScan = FindViewById<Button>(Resource.Id.buttonStopScan);
             buttonStopScan.Click += buttonStopScan_Click;
 
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-            }
             // AddStartScanButtonListener();
             AddSpinnerScannersListener();
             AddCheckBoxContinuousListener();
@@ -210,19 +155,6 @@ namespace ZebraBarcodeNative
 
                     // Enumerate scanners 
                     EnumerateScanners();
-
-                    // Set selected scanner 
-                    spinnerScanners.SetSelection(scannerIndex);
-
-                    if (horizontal)
-                    {
-                        buttonStartScan.SetWidth(120);
-                        buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                        buttonStopScan.SetWidth(120);
-                        buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-                    }
-
                 }
                 catch (Exception e)
                 {
@@ -275,11 +207,6 @@ namespace ZebraBarcodeNative
 
                 // Enumerate scanner devices
                 EnumerateScanners();
-
-                // Set default scanner
-                spinnerScanners.SetSelection(defaultIndex);
-
-                EnableButtonText();
             }
             catch (Exception e)
             {
@@ -341,9 +268,6 @@ namespace ZebraBarcodeNative
 
                     // De-initialize scanner
                     DeInitScanner();
-
-                    // Enable UI Controls
-                    RunOnUiThread(() => EnableUIControls(true));
                 }
                 status = "Status: " + scannerNameBT + ":" + statusBT;
                 RunOnUiThread(() => textViewStatus.Text = status);
@@ -353,31 +277,12 @@ namespace ZebraBarcodeNative
                 status = "Status: " + statusString + " " + scannerNameBT + ":" + statusBT;
                 RunOnUiThread(() => textViewStatus.Text = status);
             }
-            RunOnUiThread(() => EnableButtonText());
         }
 
         #endregion
 
-
-        void EnableButtonText()
-        {
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-            }
-
-        }
         void buttonStartScan_Click(object sender, EventArgs e)
         {
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-            }
             if (scanner == null)
             {
                 InitScanner();
@@ -394,9 +299,6 @@ namespace ZebraBarcodeNative
 
                         // Submit a new read.
                         scanner.Read();
-
-                        // Disable UI controls
-                        RunOnUiThread(() => EnableUIControls(false));
                     }
                     else
                     {
@@ -411,16 +313,8 @@ namespace ZebraBarcodeNative
             }
         }
 
-
-
         void buttonStopScan_Click(object sender, EventArgs e)
         {
-            if (horizontal)
-            {
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-            }
-
             if (scanner != null)
             {
                 try
@@ -430,9 +324,6 @@ namespace ZebraBarcodeNative
 
                     // Cancel the pending read.
                     scanner.CancelRead();
-
-                    // Enable UI controls
-                    RunOnUiThread(() => EnableUIControls(true));
                 }
                 catch (ScannerException ex)
                 {
@@ -444,16 +335,6 @@ namespace ZebraBarcodeNative
 
         private void AddSpinnerScannersListener()
         {
-            spinnerScanners = FindViewById<Spinner>(Resource.Id.spinnerScanners);
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-            }
-            spinnerScanners.ItemSelected += spinnerScanners_ItemSelected;
         }
 
         void spinnerScanners_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -463,13 +344,6 @@ namespace ZebraBarcodeNative
                 scannerIndex = e.Position;
                 DeInitScanner();
                 InitScanner();
-                if (horizontal)
-                {
-                    buttonStartScan.SetWidth(120);
-                    buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                    buttonStopScan.SetWidth(120);
-                    buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-                }
             }
         }
 
@@ -481,14 +355,6 @@ namespace ZebraBarcodeNative
 
         void checkBoxContinuous_CheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
         {
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-            }
             isContinuousMode = e.IsChecked;
         }
 
@@ -523,10 +389,7 @@ namespace ZebraBarcodeNative
                     textViewStatus.Text = "Status: Failed to get the list of supported scanner devices! Please close and restart the application.";
                 }
 
-                // Populate the friendly names of the supported scanners into spinner
-                ArrayAdapter<string> spinnerAdapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleSpinnerItem, friendlyNameList);
-                spinnerAdapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-                spinnerScanners.Adapter = spinnerAdapter;
+
             }
         }
 
@@ -536,8 +399,7 @@ namespace ZebraBarcodeNative
             {
                 if ((scannerList != null) && (scannerList.Count > 0))
                 {
-                    // Get new scanner device based on the selected index
-                    scanner = barcodeManager.GetDevice(scannerList[scannerIndex]);
+                    scanner = barcodeManager.GetDevice(barcodeManager.SupportedDevicesInfo[0]);
                 }
                 else
                 {
@@ -613,8 +475,6 @@ namespace ZebraBarcodeNative
                         Console.WriteLine(ex.StackTrace);
                     }
                 }
-
-                RunOnUiThread(() => EnableUIControls(true));
             }
 
             if (state == StatusData.ScannerStates.Waiting)
@@ -623,7 +483,6 @@ namespace ZebraBarcodeNative
                 RunOnUiThread(() =>
                 {
                     textViewStatus.Text = statusString;
-                    EnableUIControls(false);
                 });
             }
 
@@ -633,7 +492,6 @@ namespace ZebraBarcodeNative
                 RunOnUiThread(() =>
                 {
                     textViewStatus.Text = statusString;
-                    EnableUIControls(false);
                 });
             }
 
@@ -643,7 +501,6 @@ namespace ZebraBarcodeNative
                 RunOnUiThread(() =>
                 {
                     textViewStatus.Text = statusString;
-                    EnableUIControls(true);
                 });
             }
 
@@ -653,11 +510,8 @@ namespace ZebraBarcodeNative
                 RunOnUiThread(() =>
                 {
                     textViewStatus.Text = statusString;
-                    EnableUIControls(true);
                 });
             }
-            RunOnUiThread(() => EnableButtonText());
-
         }
 
         void scanner_Data(object sender, Scanner.DataEventArgs e)
@@ -713,11 +567,6 @@ namespace ZebraBarcodeNative
 
                 scanner = null;
             }
-        }
-
-        private void EnableUIControls(bool isEnabled)
-        {
-            spinnerScanners.Enabled = isEnabled;
         }
 
         private void DisplayScanData(string data)
