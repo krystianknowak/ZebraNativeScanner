@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ZebraBarcodeNative</string>
+    <string name="action_settings">Settings</string>
+  <string-array name="triggers_array">
+    <item>HARD</item>
+    <item>SOFT</item>
+  </string-array>
+</resources>
