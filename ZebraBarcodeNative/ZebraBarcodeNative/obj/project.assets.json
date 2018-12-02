@@ -506,11 +506,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Krystian\\source\\repos\\ZebraBarcodeNative\\ZebraBarcodeNative\\ZebraBarcodeNative.csproj",
+      "projectUniqueName": "C:\\Users\\Krystian\\source\\repos\\ZebraNativeScanner\\ZebraBarcodeNative\\ZebraBarcodeNative\\ZebraBarcodeNative.csproj",
       "projectName": "ZebraBarcodeNative",
-      "projectPath": "C:\\Users\\Krystian\\source\\repos\\ZebraBarcodeNative\\ZebraBarcodeNative\\ZebraBarcodeNative.csproj",
+      "projectPath": "C:\\Users\\Krystian\\source\\repos\\ZebraNativeScanner\\ZebraBarcodeNative\\ZebraBarcodeNative\\ZebraBarcodeNative.csproj",
       "packagesPath": "C:\\Users\\Krystian\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Krystian\\source\\repos\\ZebraBarcodeNative\\ZebraBarcodeNative\\obj\\",
+      "outputPath": "C:\\Users\\Krystian\\source\\repos\\ZebraNativeScanner\\ZebraBarcodeNative\\ZebraBarcodeNative\\obj\\",
       "projectStyle": "PackageReference",
       "skipContentFileWrite": true,
       "configFilePaths": [

@@ -38,13 +38,11 @@ namespace ZebraBarcodeNative
         private CheckBox checkBoxContinuous = null;
 
         private Spinner spinnerScanners = null;
-        private Spinner spinnerTriggers = null;
 
         private IList<ScannerInfo> scannerList = null;
 
         private int scannerIndex = 0; // Keep the selected scanner
         private int defaultIndex = 0; // Keep the default scanner 
-        private int triggerIndex = 0; // Keep the selected trigger
 
         private int dataCount = 0;
         //private int counter = 0;
@@ -118,10 +116,7 @@ namespace ZebraBarcodeNative
             }
             // AddStartScanButtonListener();
             AddSpinnerScannersListener();
-            AddSpinnerTriggersListener();
             AddCheckBoxContinuousListener();
-
-            PopulateTriggers();
 
             // The EMDKManager object will be created and returned in the callback
             EMDKResults results = EMDKManager.GetEMDKManager(Application.Context, this);
@@ -219,8 +214,6 @@ namespace ZebraBarcodeNative
                     // Set selected scanner 
                     spinnerScanners.SetSelection(scannerIndex);
 
-                    // Set selected trigger
-                    spinnerTriggers.SetSelection(triggerIndex);
                     if (horizontal)
                     {
                         buttonStartScan.SetWidth(120);
@@ -286,8 +279,6 @@ namespace ZebraBarcodeNative
                 // Set default scanner
                 spinnerScanners.SetSelection(defaultIndex);
 
-                // Set trigger (App default - HARD)
-                spinnerTriggers.SetSelection(triggerIndex);
                 EnableButtonText();
             }
             catch (Exception e)
@@ -330,8 +321,12 @@ namespace ZebraBarcodeNative
                     DeInitScanner();
                     // Initialize scanner
                     InitScanner();
-                    SetTrigger();
-                    SetDecoders();
+                    scanner.TriggerType = Scanner.TriggerTypes.SoftAlways;// TO MUSI ZOSTAC
+
+                    ScannerConfig config = scanner.GetConfig(); // SCANNER CONFIG
+                    config.DecoderParams.Ean8.Enabled = true;
+                    config.DecoderParams.Ean13.Enabled = true;
+                    scanner.SetConfig(config);
                 }
 
                 if (connectionState == BarcodeManager.ConnectionState.Disconnected)
@@ -468,8 +463,6 @@ namespace ZebraBarcodeNative
                 scannerIndex = e.Position;
                 DeInitScanner();
                 InitScanner();
-                SetTrigger();
-                SetDecoders();
                 if (horizontal)
                 {
                     buttonStartScan.SetWidth(120);
@@ -478,34 +471,6 @@ namespace ZebraBarcodeNative
                     buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
                 }
             }
-        }
-
-        private void AddSpinnerTriggersListener()
-        {
-            spinnerTriggers = FindViewById<Spinner>(Resource.Id.spinnerTriggers);
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-            }
-            spinnerTriggers.ItemSelected += spinnerTriggers_ItemSelected;
-        }
-
-        void spinnerTriggers_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            if (horizontal)
-            {
-                buttonStartScan.SetWidth(120);
-                buttonStartScan.SetTextKeepState("Start", TextView.BufferType.Editable);
-                buttonStopScan.SetWidth(120);
-                buttonStopScan.SetTextKeepState("Stop", TextView.BufferType.Editable);
-
-            }
-            triggerIndex = e.Position;
-            SetTrigger();
         }
 
         private void AddCheckBoxContinuousListener()
@@ -525,11 +490,6 @@ namespace ZebraBarcodeNative
 
             }
             isContinuousMode = e.IsChecked;
-        }
-
-        void decoders_CheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
-        {
-            SetDecoders();
         }
 
         private void EnumerateScanners()
@@ -568,14 +528,6 @@ namespace ZebraBarcodeNative
                 spinnerAdapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
                 spinnerScanners.Adapter = spinnerAdapter;
             }
-        }
-
-        private void PopulateTriggers()
-        {
-            // Populate the trigger types into spinner
-            var spinnerAdapter = ArrayAdapter.CreateFromResource(this, Resource.Array.triggers_array, Android.Resource.Layout.SimpleSpinnerItem);
-            spinnerAdapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            spinnerTriggers.Adapter = spinnerAdapter;
         }
 
         private void InitScanner()
@@ -763,61 +715,9 @@ namespace ZebraBarcodeNative
             }
         }
 
-        private void SetTrigger()
-        {
-            if (scanner == null)
-            {
-                InitScanner();
-            }
-
-            if (scanner != null)
-            {
-                switch (triggerIndex)
-                {
-                    case 0: // Selected "HARD"
-                        scanner.TriggerType = Scanner.TriggerTypes.Hard;
-                        break;
-                    case 1: // Selected "SOFT"
-                        scanner.TriggerType = Scanner.TriggerTypes.SoftAlways;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        private void SetDecoders()
-        {
-            if (scanner == null)
-            {
-                InitScanner();
-            }
-
-            if ((scanner != null) && (scanner.IsEnabled))
-            {
-                try
-                {
-                    // Config object should be taken out before changing.
-                    ScannerConfig config = scanner.GetConfig();
-
-                    config.DecoderParams.Ean8.Enabled = true;
-                    config.DecoderParams.Ean13.Enabled = true;
-
-                    // Should be assigned back to the property to get the changes to the lower layers.
-                    scanner.SetConfig(config);
-                }
-                catch (ScannerException e)
-                {
-                    textViewStatus.Text = "Status: " + e.Message;
-                    Console.WriteLine(e.StackTrace);
-                }
-            }
-        }
-
         private void EnableUIControls(bool isEnabled)
         {
             spinnerScanners.Enabled = isEnabled;
-            spinnerTriggers.Enabled = isEnabled;
         }
 
         private void DisplayScanData(string data)
